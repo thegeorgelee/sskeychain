@@ -8,6 +8,17 @@
 
 #import "SSKeychain.h"
 
+// code only compiled when targeting Mac OS X and not iOS
+// on previous versions of the sdk we do not have __MAC_10_7 defined
+#ifdef __MAC_OS_X_VERSION_MAX_ALLOWED
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+#else
+// we seem to require this to compile for version earlier that 10.7
+#import <Security/SecItem.h>
+#endif
+#endif
+
+
 NSString *const kSSKeychainErrorDomain = @"com.samsoffes.sskeychain";
 
 NSString *const kSSKeychainAccountKey = @"acct";
@@ -237,7 +248,14 @@ CFTypeRef SSKeychainAccessibilityType = NULL;
 #if __has_feature(objc_arc)
     [dictionary setObject:(__bridge id)kSecClassGenericPassword forKey:(__bridge id)kSecClass];
 #else
-	[dictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];
+
+#ifdef __MAC_OS_X_VERSION_MAX_ALLOWED
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+    [dictionary setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];
+#else
+    [dictionary setObject:(id)kSecClassInternetPassword forKey:(id)kSecClass];
+#endif
+#endif
 #endif
 	
     if (service) {
